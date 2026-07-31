@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Gera os HTMLs autocontidos do site a partir dos fragmentos em src/."""
+import datetime
+import json
 import re
 from pathlib import Path
 
@@ -29,32 +31,44 @@ CSS = FONTS + "\n" + CSS
 
 WA = ("https://wa.me/5585991090253?text="
       "Ol%C3%A1%2C%20Marynna.%20Cheguei%20pelo%20seu%20site%20e%20gostaria%20de%20conversar.")
+TEL = "+5585991090253"
 MAIL = "marynnalqp@gmail.com"
 LINKEDIN = "https://www.linkedin.com/in/marynna-pereira"
 LATTES = "http://lattes.cnpq.br/7021509895045643"
-OAB = "OAB/CE n&ordm; [inserir]"
+OAB = "OAB/CE nº [inserir]"
+
+# Endereço profissional — único lugar do site que cita a cidade.
+END_RUA = "Rua Monsenhor Bruno, 2220"
+END_CIDADE = "Fortaleza"
+END_UF = "CE"
+END_CEP = "60115-046"
+
+# Preencha com o domínio final para emitir canonical e og:url.
+# Vazio = as tags são omitidas (melhor do que apontar para um endereço errado).
+SITE_URL = ""
+
+ANO = datetime.date.today().year
 
 PAGES = {
     "index.html": dict(
         body="index",
         title="Marynna Pereira | Advogada — Patrimônio, Societário e Governança",
-        desc=("Advogada e consultora jurídica em Fortaleza/CE. Estruturação societária, "
-              "planejamento patrimonial, sucessório e tributário, governança, compliance e "
-              "proteção de dados."),
+        desc=("Advocacia e consultoria jurídica em estruturação societária, planejamento "
+              "patrimonial, sucessório e tributário, governança, compliance e proteção de dados."),
         dark_head=True,
     ),
     "empresas.html": dict(
         body="empresas",
         title="Consultoria jurídica para empresas | Marynna Pereira",
         desc=("Estruturação societária, holding, planejamento tributário, governança "
-              "corporativa, compliance e LGPD para empresas. Fortaleza/CE e atendimento remoto."),
+              "corporativa, compliance e LGPD para empresas. Atendimento presencial e a distância."),
         dark_head=True,
     ),
     "patrimonio-e-sucessao.html": dict(
         body="pessoal",
         title="Planejamento patrimonial e sucessório | Marynna Pereira",
         desc=("Planejamento sucessório, holding familiar, proteção patrimonial, testamento e "
-              "doações para pessoas físicas e famílias. Fortaleza/CE e atendimento remoto."),
+              "doações para pessoas físicas e famílias. Atendimento presencial e a distância."),
         dark_head=True,
     ),
 }
@@ -69,19 +83,20 @@ def header(current, dark):
     parts = []
     for href, label in NAV_ITEMS:
         aria = ' aria-current="page"' if href == current else ""
-        parts.append(f'<a href="{href}" class="nav-hide"{aria}>{label}</a>')
-    links = "".join(parts)
+        parts.append(f'<a href="{href}"{aria}>{label}</a>')
+    links = "\n      ".join(parts)
     cls = "site-head on-dark" if dark else "site-head"
-    return f"""<header class="{cls}" id="siteHead">
+    return f"""<a class="pular" href="#conteudo">Ir para o conteúdo</a>
+<header class="{cls}">
   <div class="wrap head-in">
-    <a class="brand" href="index.html" aria-label="Marynna Pereira &mdash; p&aacute;gina inicial">
+    <a class="brand" href="index.html">
       <span class="mono" aria-hidden="true">MP</span>
       <span>
         <span class="brand-name">Marynna Pereira</span>
-        <span class="brand-role">Advogada &middot; Consultora jur&iacute;dica</span>
+        <span class="brand-role">Advogada · Consultora jurídica</span>
       </span>
     </a>
-    <nav class="nav">
+    <nav class="nav" aria-label="Principal">
       {links}
       <a href="#contato" class="btn btn-sm {'btn-outline-light' if dark else 'btn-ghost'}">Contato</a>
     </nav>
@@ -93,29 +108,28 @@ def footer():
     return f"""<footer class="foot">
   <div class="wrap">
     <div class="foot-top">
-      <div>
-        <div class="idn">Marynna Pereira</div>
-        <div style="margin-top:8px">Advogada &middot; {OAB}</div>
-        <div style="margin-top:4px">Rua Monsenhor Bruno, 2220 &mdash; Fortaleza/CE, 60115-046</div>
+      <div class="foot-id">
+        <p class="idn">Marynna Pereira</p>
+        <p>Advogada · {OAB}</p>
+        <address>{END_RUA} — {END_CIDADE}/{END_UF}, {END_CEP}</address>
       </div>
-      <nav class="foot-nav">
-        <a href="index.html">In&iacute;cio</a>
+      <nav class="foot-nav" aria-label="Rodapé">
+        <a href="index.html">Início</a>
         <a href="empresas.html">Para empresas</a>
-        <a href="patrimonio-e-sucessao.html">Para voc&ecirc; e sua fam&iacute;lia</a>
+        <a href="patrimonio-e-sucessao.html">Para você e sua família</a>
         <a href="{LINKEDIN}" target="_blank" rel="noopener">LinkedIn</a>
         <a href="{LATTES}" target="_blank" rel="noopener">Lattes</a>
       </nav>
     </div>
     <p class="disclaimer">
-      Conte&uacute;do de car&aacute;ter exclusivamente informativo, publicado nos termos do Provimento n&ordm; 205/2021
-      do Conselho Federal da Ordem dos Advogados do Brasil. As informa&ccedil;&otilde;es desta p&aacute;gina n&atilde;o
-      constituem consulta, parecer ou orienta&ccedil;&atilde;o jur&iacute;dica para caso concreto, n&atilde;o
-      configuram oferta de servi&ccedil;os e n&atilde;o veiculam promessa de resultado. Cada situa&ccedil;&atilde;o
-      exige an&aacute;lise individual. As refer&ecirc;ncias legislativas citadas remetem &agrave; norma vigente na data
-      de publica&ccedil;&atilde;o.
+      Conteúdo de caráter exclusivamente informativo, publicado nos termos do Provimento nº 205/2021
+      do Conselho Federal da Ordem dos Advogados do Brasil. As informações desta página não
+      constituem consulta, parecer ou orientação jurídica para caso concreto, não configuram oferta
+      de serviços e não veiculam promessa de resultado. Cada situação exige análise individual. As
+      referências legislativas citadas remetem à norma vigente na data de publicação.
     </p>
-    <p class="disclaimer" style="margin-top:14px">
-      &copy; <span id="yr">2026</span> Marynna Pereira. Todos os direitos reservados.
+    <p class="disclaimer">
+      © <span id="yr">{ANO}</span> Marynna Pereira. Todos os direitos reservados.
     </p>
   </div>
 </footer>
@@ -134,18 +148,24 @@ SHELL = """<!DOCTYPE html>
 <meta name="description" content="{desc}">
 <meta name="author" content="Marynna Pereira">
 <meta name="robots" content="index, follow">
-<meta property="og:type" content="website">
+<meta name="theme-color" content="#0F1D18">
+<meta name="color-scheme" content="light">
+{canonical}<meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
-<meta property="og:site_name" content="Marynna Pereira &mdash; Advocacia e Consultoria Jur&iacute;dica">
+<meta property="og:site_name" content="Marynna Pereira — Advocacia e Consultoria Jurídica">
+<link rel="icon" href="data:image/svg+xml,{favicon}">
 <style>
 {css}
 </style>
+<script type="application/ld+json">
+{jsonld}
+</script>
 </head>
 <body>
 {header}
-<main>
+<main id="conteudo">
 {body}
 </main>
 {footer}
@@ -153,24 +173,65 @@ SHELL = """<!DOCTYPE html>
 (function () {{
   var y = document.getElementById('yr');
   if (y) y.textContent = new Date().getFullYear();
-
-  var els = document.querySelectorAll('.rv');
-  if (!('IntersectionObserver' in window) ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches) {{
-    els.forEach(function (e) {{ e.classList.add('in'); }});
-    return;
-  }}
-  var io = new IntersectionObserver(function (entries) {{
-    entries.forEach(function (en) {{
-      if (en.isIntersecting) {{ en.target.classList.add('in'); io.unobserve(en.target); }}
-    }});
-  }}, {{ rootMargin: '0px 0px -8% 0px', threshold: 0.06 }});
-  els.forEach(function (e) {{ io.observe(e); }});
 }})();
 </script>
 </body>
 </html>
 """
+
+# Favicon: o monograma MP nas cores do site, sem arquivo externo.
+FAVICON = (
+    "%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E"
+    "%3Crect%20width='32'%20height='32'%20fill='%230F1D18'/%3E"
+    "%3Ctext%20x='16'%20y='22'%20font-family='Georgia,serif'%20font-size='15'"
+    "%20fill='%23D6C599'%20text-anchor='middle'%3EMP%3C/text%3E%3C/svg%3E"
+)
+
+
+def page_url(page):
+    """URL pública da página. Vazio enquanto SITE_URL não estiver definido."""
+    if not SITE_URL:
+        return ""
+    return SITE_URL.rstrip("/") + "/" + OUT_PATH[page].replace("index.html", "")
+
+
+def jsonld(page):
+    """Dados estruturados — só o que já está visível na página."""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Attorney",
+        "name": "Marynna Pereira",
+        "description": PAGES[page]["desc"],
+        "knowsLanguage": ["pt-BR", "en", "es", "fr", "zh"],
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": END_RUA,
+            "addressLocality": END_CIDADE,
+            "addressRegion": END_UF,
+            "postalCode": END_CEP,
+            "addressCountry": "BR",
+        },
+        "telephone": TEL,
+        "email": MAIL,
+        "sameAs": [LINKEDIN, LATTES],
+        "areaServed": "BR",
+        "knowsAbout": [
+            "Direito societário", "Planejamento patrimonial",
+            "Planejamento sucessório", "Direito tributário",
+            "Governança corporativa", "Compliance", "LGPD",
+        ],
+    }
+    if page_url(page):
+        data["url"] = page_url(page)
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+def canonical(page):
+    url = page_url(page)
+    if not url:
+        return ""
+    return (f'<link rel="canonical" href="{url}">\n'
+            f'<meta property="og:url" content="{url}">\n')
 
 
 OUT_PATH = {
@@ -215,6 +276,7 @@ def build():
                     .replace("{{LATTES}}", LATTES))
         html = SHELL.format(
             title=cfg["title"], desc=cfg["desc"], css=CSS,
+            canonical=canonical(out), jsonld=jsonld(out), favicon=FAVICON,
             header=header(out, cfg["dark_head"]), body=frag, footer=footer(),
         )
         html = rewrite_links(html, out)
