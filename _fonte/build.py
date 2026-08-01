@@ -125,7 +125,7 @@ def footer():
       Conteúdo de caráter exclusivamente informativo, publicado nos termos do Provimento nº 205/2021
       do Conselho Federal da Ordem dos Advogados do Brasil. As informações desta página não
       constituem consulta, parecer ou orientação jurídica para caso concreto, não configuram oferta
-      de serviços e não veiculam promessa de resultado. Cada situação exige análise individual. As
+      de serviços e não veiculam promessa de resultado. Cada situação exige análise individual. As titulações e experiências indicadas são verdadeiras e comprováveis mediante solicitação, nos termos do art. 1º, § 2º, do mesmo Provimento. As
       referências legislativas citadas remetem à norma vigente na data de publicação.
     </p>
     <p class="disclaimer">

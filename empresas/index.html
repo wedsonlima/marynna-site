@@ -120,10 +120,8 @@ strong{font-weight:600}
   padding-left:max(var(--gutter),env(safe-area-inset-left));
   padding-right:max(var(--gutter),env(safe-area-inset-right));
 }
-.wrap-flush{padding:0}
 
 section{padding:clamp(66px,8.5vw,116px) 0}
-.sec-tight{padding:clamp(52px,6.5vw,84px) 0}
 
 /* superfícies escuras */
 .on-ink{background:var(--ink);color:var(--on-dark)}
@@ -146,7 +144,6 @@ section{padding:clamp(66px,8.5vw,116px) 0}
 .h-md{font-size:clamp(24px,2.8vw,32px);font-weight:400;line-height:1.18;letter-spacing:-.012em}
 
 .lead{font-size:clamp(17px,1.4vw,19.5px);line-height:1.62;color:var(--slate);max-width:60ch}
-.lead-wide{max-width:none}
 .lead + .lead{margin-top:18px}
 h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
 .measure{max-width:20ch}
@@ -321,16 +318,7 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
   .hero-grid > .signature{animation:entra .75s cubic-bezier(.22,.61,.36,1) .54s backwards}
 }
 @keyframes entra{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-
-/* ---------- faixa de credenciais ---------- */
-.strip{background:var(--ink-2);color:var(--on-dark);padding:0}
-.strip-in{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  border-left:1px solid var(--line-dark);
-}
-.strip .item{padding:24px var(--gutter);border-right:1px solid var(--line-dark)}
 .strip .k{font-family:var(--ff-display);font-weight:400;font-size:20px;color:var(--paper);line-height:1.25}
-.strip .v{font-size:13px;color:var(--on-dark-2);margin-top:6px;line-height:1.5}
 /* Ao reduzir as colunas, o fio que separava lado a lado passa a separar
    de cima para baixo — e o que sobrava na beira da tela sai. */
 @media (max-width:820px){
@@ -338,11 +326,6 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
   .strip .item{padding:20px var(--gutter);border-top:1px solid var(--line-dark)}
   .strip .item:nth-child(-n+2){border-top:none}
   .strip .item:nth-child(2n){border-right:none}
-}
-@media (max-width:460px){
-  .strip-in{grid-template-columns:1fr}
-  .strip .item{border-right:none}
-  .strip .item:nth-child(2){border-top:1px solid var(--line-dark)}
 }
 
 /* ---------- bifurcação (home) ---------- */
@@ -478,33 +461,6 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
 .step h3{font-size:19px;font-weight:500;color:var(--paper);margin:14px 0 10px;letter-spacing:-.006em}
 .step p{font-size:15.5px;color:var(--on-dark-2);line-height:1.62}
 
-/* ---------- trajetória ---------- */
-.bio-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,72px);align-items:start}
-@media (max-width:900px){.bio-grid{grid-template-columns:1fr}}
-.cred{list-style:none;border-top:1px solid var(--line);margin-top:8px}
-.cred li{
-  display:grid;grid-template-columns:auto 1fr;gap:22px;
-  padding:16px 0;border-bottom:1px solid var(--line);
-}
-@media (max-width:420px){.cred li{grid-template-columns:1fr;gap:4px}}
-.cred .yr{
-  color:var(--brass);font-size:var(--t-cite);font-weight:600;letter-spacing:.03em;
-  white-space:nowrap;padding-top:4px;
-}
-.cred .it{font-size:15.5px;color:var(--ink);line-height:1.45}
-.cred .it span{display:block;color:var(--slate);font-size:14px;margin-top:4px;line-height:1.55}
-
-.portrait{
-  border:1px solid var(--line);background:var(--paper-2);
-  aspect-ratio:4/5;display:grid;place-items:center;text-align:center;padding:32px;margin-top:34px;
-}
-.portrait .ph{font-size:var(--t-cite);color:var(--slate);line-height:1.6;max-width:26ch}
-.portrait .mk{
-  font-family:var(--ff-display);font-weight:300;font-size:50px;color:var(--brass);
-  border:1px solid var(--brass-2);width:94px;height:94px;
-  display:grid;place-items:center;margin:0 auto 20px;
-}
-
 /* ---------- perguntas frequentes ---------- */
 .faq{max-width:78ch;margin-top:36px}
 .faq details{border-top:1px solid var(--line)}
@@ -541,13 +497,6 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
 .mid-cta-in{display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
 .mid-cta h2{font-size:clamp(21px,2.3vw,26px);font-weight:400;max-width:28ch;letter-spacing:-.012em}
 .mid-cta p{font-size:var(--t-aux);color:var(--slate);margin-top:8px;max-width:50ch}
-
-/* ---------- áreas resumidas (chips) ---------- */
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px;list-style:none}
-.chips li{
-  font-size:13.5px;color:var(--slate);border:1px solid var(--line);
-  padding:7px 13px;background:#fff;
-}
 
 /* ---------- contato ---------- */
 .cta{background:var(--ink);color:var(--on-dark)}
@@ -969,61 +918,6 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
   </div>
 </section>
 
-<!-- ============ TRAJETÓRIA ============ -->
-<section aria-labelledby="t-trajetoria">
-  <div class="wrap">
-    <div class="bio-grid">
-      <div>
-        <p class="eyebrow">Trajetória</p>
-        <h2 class="h-md" id="t-trajetoria">Quem vai estar do outro lado da mesa.</h2>
-        <p class="lead">
-          Atuo de forma autônoma desde 2018, com experiência em tecnologia, investimentos, saúde,
-          educação e setor público. Já conduzi estruturação de governança, acordo de sócios,
-          adequação à LGPD e negociação contratual em empresas de portes bastante distintos.
-        </p>
-        <p class="note">
-          Titulações e experiências comprováveis mediante solicitação, nos termos do art. 1º, § 2º,
-          do Provimento nº 205/2021 do Conselho Federal da OAB.
-        </p>
-      </div>
-      <div>
-        <ul class="cred">
-          <li>
-            <span class="yr">2018 — atual</span>
-            <span class="it"><strong>Advogada e consultora jurídica</strong>
-              <span>Atuação autônoma — societário, tributário e patrimonial</span></span>
-          </li>
-          <li>
-            <span class="yr">2025 — atual</span>
-            <span class="it"><strong>Encarregada de dados (DPO) e consultora de compliance</strong>
-              <span>Cubbo Inova — adequação à LGPD e formação de encarregados no setor público</span></span>
-          </li>
-          <li>
-            <span class="yr">2023 — 2024</span>
-            <span class="it"><strong>Gerente de pesquisa</strong>
-              <span>FGV Direito Rio — Centro de Pesquisa em Direito Global</span></span>
-          </li>
-          <li>
-            <span class="yr">2021 — 2023</span>
-            <span class="it"><strong>Advogada societária e corporativa</strong>
-              <span>Conceito Investimentos — governança, acordo de sócios e conflitos societários</span></span>
-          </li>
-          <li>
-            <span class="yr">2019 — 2023</span>
-            <span class="it"><strong>Gerência jurídica e de projetos</strong>
-              <span>Acerte Tech — contratos, riscos e liderança de equipe</span></span>
-          </li>
-          <li>
-            <span class="yr">2018 — 2020</span>
-            <span class="it"><strong>Mestrado em Direito Constitucional</strong>
-              <span>Universidade de Fortaleza — UNIFOR</span></span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ============ PERGUNTAS FREQUENTES ============ -->
 <section class="facts" aria-labelledby="t-faq">
   <div class="wrap">
@@ -1140,7 +1034,7 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
       Conteúdo de caráter exclusivamente informativo, publicado nos termos do Provimento nº 205/2021
       do Conselho Federal da Ordem dos Advogados do Brasil. As informações desta página não
       constituem consulta, parecer ou orientação jurídica para caso concreto, não configuram oferta
-      de serviços e não veiculam promessa de resultado. Cada situação exige análise individual. As
+      de serviços e não veiculam promessa de resultado. Cada situação exige análise individual. As titulações e experiências indicadas são verdadeiras e comprováveis mediante solicitação, nos termos do art. 1º, § 2º, do mesmo Provimento. As
       referências legislativas citadas remetem à norma vigente na data de publicação.
     </p>
     <p class="disclaimer">
