@@ -32,7 +32,7 @@ CSS = FONTS + "\n" + CSS
 WA = ("https://wa.me/5585991090253?text="
       "Ol%C3%A1%2C%20Marynna.%20Cheguei%20pelo%20seu%20site%20e%20gostaria%20de%20conversar.")
 TEL = "+5585991090253"
-MAIL = "marynnalqp@gmail.com"
+MAIL = "oi@marynnapereira.adv.br"
 LINKEDIN = "https://www.linkedin.com/in/marynna-pereira"
 LATTES = "https://lattes.cnpq.br/7021509895045643"
 OAB = "OAB/CE nº 39.602"
