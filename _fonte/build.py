@@ -93,13 +93,13 @@ def header(current, dark):
       <span class="mono" aria-hidden="true">MP</span>
       <span>
         <span class="brand-name">Marynna Pereira</span>
-        <span class="brand-role">Advogada · Consultora jurídica</span>
+        <span class="brand-role">Advogada<span class="brand-role-x"> · Consultora jurídica</span></span>
       </span>
     </a>
     <nav class="nav" aria-label="Principal">
       {links}
-      <a href="#contato" class="btn btn-sm {'btn-outline-light' if dark else 'btn-ghost'}">Contato</a>
     </nav>
+    <a href="#contato" class="head-cta btn btn-sm {'btn-outline-light' if dark else 'btn-ghost'}">Contato</a>
   </div>
 </header>"""
 
