@@ -35,7 +35,7 @@ TEL = "+5585991090253"
 MAIL = "marynnalqp@gmail.com"
 LINKEDIN = "https://www.linkedin.com/in/marynna-pereira"
 LATTES = "http://lattes.cnpq.br/7021509895045643"
-OAB = "OAB/CE nº [inserir]"
+OAB = "OAB/CE nº 39.602"
 
 # Endereço profissional — único lugar do site que cita a cidade.
 END_RUA = "Rua Monsenhor Bruno, 2220"
