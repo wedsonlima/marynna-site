@@ -34,7 +34,7 @@ WA = ("https://wa.me/5585991090253?text="
 TEL = "+5585991090253"
 MAIL = "marynnalqp@gmail.com"
 LINKEDIN = "https://www.linkedin.com/in/marynna-pereira"
-LATTES = "http://lattes.cnpq.br/7021509895045643"
+LATTES = "https://lattes.cnpq.br/7021509895045643"
 OAB = "OAB/CE nº 39.602"
 
 # Endereço profissional — único lugar do site que cita a cidade.
