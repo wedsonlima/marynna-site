@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://marynnapereira.adv.br/sitemap.xml

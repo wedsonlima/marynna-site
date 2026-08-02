@@ -32,20 +32,19 @@ CSS = FONTS + "\n" + CSS
 WA = ("https://wa.me/5585991090253?text="
       "Ol%C3%A1%2C%20Marynna.%20Cheguei%20pelo%20seu%20site%20e%20gostaria%20de%20conversar.")
 TEL = "+5585991090253"
-MAIL = "marynnalqp@gmail.com"
+MAIL = "oi@marynnapereira.adv.br"
 LINKEDIN = "https://www.linkedin.com/in/marynna-pereira"
-LATTES = "http://lattes.cnpq.br/7021509895045643"
-OAB = "OAB/CE nº [inserir]"
+LATTES = "https://lattes.cnpq.br/7021509895045643"
+OAB = "OAB/CE nº 39.602"
 
-# Endereço profissional — único lugar do site que cita a cidade.
-END_RUA = "Rua Monsenhor Bruno, 2220"
+# Praça de atuação. O endereço de rua não é publicado: só cidade e UF, e apenas
+# nos dados estruturados, para sinalizar a região atendida.
 END_CIDADE = "Fortaleza"
 END_UF = "CE"
-END_CEP = "60115-046"
 
-# Preencha com o domínio final para emitir canonical e og:url.
-# Vazio = as tags são omitidas (melhor do que apontar para um endereço errado).
-SITE_URL = ""
+# Domínio final. Vazio = canonical, og:url, og:image e o sitemap são omitidos,
+# porque URL relativa não serve para nenhum deles.
+SITE_URL = "https://marynnapereira.adv.br"
 
 ANO = datetime.date.today().year
 
@@ -55,6 +54,9 @@ PAGES = {
         title="Marynna Pereira | Advogada — Patrimônio, Societário e Governança",
         desc=("Advocacia e consultoria jurídica em estruturação societária, planejamento "
               "patrimonial, sucessório e tributário, governança, compliance e proteção de dados."),
+        og="home.png",
+        og_alt=("Cartão do site de Marynna Pereira, advogada: Patrimônio, estrutura "
+                "societária e sucessão."),
         dark_head=True,
     ),
     "empresas.html": dict(
@@ -62,6 +64,9 @@ PAGES = {
         title="Consultoria jurídica para empresas | Marynna Pereira",
         desc=("Estruturação societária, holding, planejamento tributário, governança "
               "corporativa, compliance e LGPD para empresas. Atendimento presencial e a distância."),
+        og="empresas.png",
+        og_alt=("Cartão da página para empresas: a estrutura da empresa é uma decisão "
+                "jurídica — e financeira."),
         dark_head=True,
     ),
     "patrimonio-e-sucessao.html": dict(
@@ -69,6 +74,9 @@ PAGES = {
         title="Planejamento patrimonial e sucessório | Marynna Pereira",
         desc=("Planejamento sucessório, holding familiar, proteção patrimonial, testamento e "
               "doações para pessoas físicas e famílias. Atendimento presencial e a distância."),
+        og="patrimonio-e-sucessao.png",
+        og_alt=("Cartão da página de patrimônio e sucessão: o que se constrói numa vida "
+                "se transmite segundo regras."),
         dark_head=True,
     ),
 }
@@ -111,7 +119,6 @@ def footer():
       <div class="foot-id">
         <p class="idn">Marynna Pereira</p>
         <p>Advogada · {OAB}</p>
-        <address>{END_RUA} — {END_CIDADE}/{END_UF}, {END_CEP}</address>
       </div>
       <nav class="foot-nav" aria-label="Rodapé">
         <a href="index.html">Início</a>
@@ -125,7 +132,7 @@ def footer():
       Conteúdo de caráter exclusivamente informativo, publicado nos termos do Provimento nº 205/2021
       do Conselho Federal da Ordem dos Advogados do Brasil. As informações desta página não
       constituem consulta, parecer ou orientação jurídica para caso concreto, não configuram oferta
-      de serviços e não veiculam promessa de resultado. Cada situação exige análise individual. As
+      de serviços e não veiculam promessa de resultado. Cada situação exige análise individual. As titulações e experiências indicadas são verdadeiras e comprováveis mediante solicitação, nos termos do art. 1º, § 2º, do mesmo Provimento. As
       referências legislativas citadas remetem à norma vigente na data de publicação.
     </p>
     <p class="disclaimer">
@@ -155,7 +162,7 @@ SHELL = """<!DOCTYPE html>
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:site_name" content="Marynna Pereira — Advocacia e Consultoria Jurídica">
-<link rel="icon" href="data:image/svg+xml,{favicon}">
+{social}<link rel="icon" href="data:image/svg+xml,{favicon}">
 <style>
 {css}
 </style>
@@ -205,10 +212,8 @@ def jsonld(page):
         "knowsLanguage": ["pt-BR", "en", "es", "fr", "zh"],
         "address": {
             "@type": "PostalAddress",
-            "streetAddress": END_RUA,
             "addressLocality": END_CIDADE,
             "addressRegion": END_UF,
-            "postalCode": END_CEP,
             "addressCountry": "BR",
         },
         "telephone": TEL,
@@ -224,6 +229,24 @@ def jsonld(page):
     if page_url(page):
         data["url"] = page_url(page)
     return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+def social(page):
+    """Cartão para redes sociais. Exige URL absoluta — sem SITE_URL, não sai."""
+    if not SITE_URL:
+        return ""
+    cfg = PAGES[page]
+    img = SITE_URL.rstrip("/") + "/og/" + cfg["og"]
+    return (f'<meta property="og:image" content="{img}">\n'
+            f'<meta property="og:image:type" content="image/png">\n'
+            f'<meta property="og:image:width" content="1200">\n'
+            f'<meta property="og:image:height" content="630">\n'
+            f'<meta property="og:image:alt" content="{cfg["og_alt"]}">\n'
+            f'<meta name="twitter:card" content="summary_large_image">\n'
+            f'<meta name="twitter:title" content="{cfg["title"]}">\n'
+            f'<meta name="twitter:description" content="{cfg["desc"]}">\n'
+            f'<meta name="twitter:image" content="{img}">\n'
+            f'<meta name="twitter:image:alt" content="{cfg["og_alt"]}">\n')
 
 
 def canonical(page):
@@ -276,7 +299,8 @@ def build():
                     .replace("{{LATTES}}", LATTES))
         html = SHELL.format(
             title=cfg["title"], desc=cfg["desc"], css=CSS,
-            canonical=canonical(out), jsonld=jsonld(out), favicon=FAVICON,
+            canonical=canonical(out), social=social(out),
+            jsonld=jsonld(out), favicon=FAVICON,
             header=header(out, cfg["dark_head"]), body=frag, footer=footer(),
         )
         html = rewrite_links(html, out)
@@ -286,6 +310,37 @@ def build():
         print(f"  ✓ {OUT_PATH[out]}  ({len(html)//1024} KB)")
 
 
+def sitemap():
+    """Sitemap e robots saem daqui para não repetirem o domínio à mão."""
+    if not SITE_URL:
+        print("  · SITE_URL vazio — sitemap.xml e robots.txt não foram tocados")
+        return
+    hoje = datetime.date.today().isoformat()
+    urls = "\n".join(
+        f"  <url>\n"
+        f"    <loc>{page_url(p)}</loc>\n"
+        f"    <lastmod>{hoje}</lastmod>\n"
+        f"    <changefreq>monthly</changefreq>\n"
+        f"    <priority>{'1.0' if p == 'index.html' else '0.8'}</priority>\n"
+        f"  </url>"
+        for p in PAGES
+    )
+    (DIST / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{urls}\n"
+        "</urlset>\n", encoding="utf-8")
+    print("  ✓ sitemap.xml")
+
+    (DIST / "robots.txt").write_text(
+        "User-agent: *\n"
+        "Allow: /\n"
+        "\n"
+        f"Sitemap: {SITE_URL.rstrip('/')}/sitemap.xml\n", encoding="utf-8")
+    print("  ✓ robots.txt")
+
+
 if __name__ == "__main__":
     print("Gerando páginas:")
     build()
+    sitemap()
