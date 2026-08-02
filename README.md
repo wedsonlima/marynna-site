@@ -1,14 +1,16 @@
 # Site institucional — Marynna Pereira
 
 Site estático de três páginas, sem dependências externas: as fontes (Fraunces e Inter)
-estão embutidas em base64 no CSS de cada página, então nada é carregado de terceiros.
-Também não há JavaScript essencial — a página funciona inteira com o script desativado.
+são servidas do próprio domínio, então nada é carregado de terceiros. Também não há
+JavaScript essencial — a página funciona inteira com o script desativado.
 
 ## Estrutura publicada
 
     index.html                       →  /
     empresas/index.html              →  /empresas/
     patrimonio-e-sucessao/index.html →  /patrimonio-e-sucessao/
+    404.html                         →  erro do GitHub Pages, fora do índice
+    fonts/*.woff2                    →  fontes com hash no nome
     og/*.png                         →  cartões de compartilhamento (1200×630)
     sitemap.xml, robots.txt          →  gerados pelo build
 
@@ -34,6 +36,40 @@ ficam no topo de `build.py`. O endereço de rua não é publicado: a cidade apar
 
 `SITE_URL` governa `canonical`, `og:url`, `og:image`, a `url` dos dados estruturados e o
 sitemap. Se for esvaziado, todos são omitidos — URL relativa não serve para nenhum deles.
+
+`_fonte/lastmod.json` é gerado pelo build e **deve ser versionado**: ele guarda a impressão
+digital do conteúdo de cada página e a data em que ela mudou pela última vez. O `lastmod` do
+sitemap sai dali, e não da data da build — o Google ignora `lastmod` que avança a cada
+republicação. Reordenar CSS ou trocar uma fonte não mexe na data; editar o texto, sim.
+
+## Fontes
+
+As duas fontes são arquivo em `fonts/`, com hash de conteúdo no nome, e vêm precarregadas
+(`<link rel=preload … crossorigin>`). Antes elas viajavam em base64 dentro do `<style>` de
+cada página. Medido com Lighthouse em 4G lento, throttling real (`--throttling-method=devtools`),
+mediana de três execuções:
+
+| | base64 no HTML | arquivo + preload |
+|---|---|---|
+| HTML por página | 152–166 KB | 42–56 KB |
+| FCP | 1233–1248 ms | **788–802 ms** |
+| LCP | 2302–2323 ms | **1596–1614 ms** |
+| CLS | 0 | 0 |
+
+Duas armadilhas encontradas no caminho, registradas para não se repetirem:
+
+- **O modo simulado do Lighthouse (padrão) inverte o resultado do LCP**, porque cobra o
+  download da fonte do caminho crítico independentemente de quando o texto pinta. Ele acusa
+  piora onde a medição real acusa 700 ms de ganho. Para decidir sobre fonte, use
+  `--throttling-method=devtools`.
+- As famílias `… Fallback` em `build.py` vestem a fonte do sistema com as métricas da fonte
+  real, para o bloco de texto não mudar de tamanho quando a real chega. As razões vêm de
+  medição em navegador; refazê-la exige `document.fonts.load()` explícito, senão
+  `document.fonts.ready` resolve sem baixar nada e mede recurso contra recurso.
+
+O casamento é exato no corpo (Inter), que é o elemento de LCP. No `h1` a Fraunces ainda quebra
+numa linha a mais que o recurso: nenhuma razão única resolve, porque a diferença está na
+distribuição das larguras de glifo, não na largura total.
 
 ## Cartões de compartilhamento
 
@@ -61,6 +97,25 @@ de um `counter()` no CSS. Listas que não são sequência não recebem número.
 
 Animação: uma única entrada escalonada no herói, em CSS, desligada sob
 `prefers-reduced-motion: reduce`. Não há animação atrelada a rolagem.
+
+## SEO
+
+- `title` e `description` únicos por página, com o `description` entre 145 e 160 caracteres —
+  acima disso o Google corta o trecho
+- Dados estruturados num único `@graph` por página: `Person`, `Attorney`, `WebSite`, `WebPage`
+  e, nas internas, `BreadcrumbList` e `FAQPage`. O `@id` é o que diz ao buscador que a pessoa
+  e a banca das três páginas são a mesma entidade
+- O `FAQPage` é extraído dos `<details>` da própria página, não escrito à mão: dado estruturado
+  que não corresponde ao conteúdo visível é violação de diretriz
+- `max-image-preview:large` no `robots`, para o cartão aparecer em tamanho útil no resultado
+- Trilha de navegação visível nas internas, na linha da sobrancelha, casada com o
+  `BreadcrumbList` — as duas saem da mesma tabela `CRUMBS` em `build.py`
+
+Não feito, por ser decisão de posicionamento e não questão técnica: **nenhum `title` ou
+`description` menciona Fortaleza.** O guia do Google recomenda cidade no título para negócio
+com praça definida, e buscas locais ("advogada societária Fortaleza") são de alta intenção.
+O site hoje se apresenta como nacional (`areaServed: BR`, atendimento a distância) e a cidade
+só aparece nos dados estruturados. Vale decidir de qual lado ficar.
 
 ## Pendências antes de divulgar
 
