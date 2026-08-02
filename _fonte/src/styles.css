@@ -151,7 +151,8 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
 .crumbs li{display:flex;align-items:center;gap:0 10px}
 .crumbs li + li::before{content:"/";color:var(--brass-soft);font-weight:400}
 .crumbs a{
-  display:inline-block;padding:7px 0;margin:-7px 0;
+  /* 44px de alvo sem mudar a altura da linha: o padding cresce, a margem devolve */
+  display:inline-block;padding:12px 0;margin:-12px 0;
   text-decoration:none;color:var(--on-dark-2);
   border-bottom:1px solid transparent;transition:color .2s,border-color .2s;
 }
@@ -538,8 +539,10 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
 .foot-nav a{border-bottom:none}
 /* no celular a lista do rodapé é o menu de verdade: precisa de alvo */
 @media (max-width:780px){
-  .foot-nav{gap:0 24px}
-  .foot-nav a{padding:11px 0}
+  /* o alvo cresce para os lados e o vão diminui na mesma medida: o
+     espaçamento visto continua 24px, o dedo ganha 12px */
+  .foot-nav{gap:0 12px}
+  .foot-nav a{padding:11px 6px}
 }
 .disclaimer{margin-top:24px;font-size:13px;line-height:1.75;color:var(--on-dark-2);max-width:86ch}
 
@@ -556,16 +559,30 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
   transition:background .2s;
 }
 .wa:hover{background:var(--brass)}
-@media (max-width:520px){
-  .wa{
-    right:max(14px,env(safe-area-inset-right));
-    bottom:max(14px,env(safe-area-inset-bottom));
-    padding:11px 15px;font-size:13.5px;
-  }
-}
 /* o botão flutua sobre o rodapé: reserva o espaço dele */
 .foot{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 @media (min-width:900px){.foot{padding-bottom:40px}}
+
+/* No telefone o atalho vira disco, só o símbolo.
+   Com o rótulo, ele media 141px de largura e cobria a metade direita de um
+   dos botões do herói em tela estreita (320px) ou baixa (640px de altura).
+   Como flutua por cima, o toque ia para o WhatsApp em vez do destino mirado.
+   Encolher é o que resolve: elemento fixo cobre o pé da tela em qualquer
+   rolagem, então reservar espaço no fim do documento não adiantaria — o
+   choque é com o herói, no topo. O nome fica no aria-label. */
+@media (max-width:560px){
+  .wa{
+    right:max(16px,env(safe-area-inset-right));
+    bottom:max(16px,env(safe-area-inset-bottom));
+    width:56px;height:56px;padding:0;
+    justify-content:center;
+    border-radius:50%;
+    gap:0;
+  }
+  /* o nome continua no aria-label, que é o que o leitor de tela anuncia */
+  .wa-t{display:none}
+  .wa svg{width:23px;height:23px}
+}
 
 /* ---------- aparelhos de toque ----------
    Tablet largo cai no cabeçalho de desktop, mas continua sendo dedo e não
@@ -575,8 +592,8 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
   .nav a{padding:11px 0}
   .nav a::after{bottom:8px}
   .head-cta.btn-sm{padding:12px 18px}
-  .foot-nav{gap:0 24px}
-  .foot-nav a{padding:11px 0}
+  .foot-nav{gap:0 12px}
+  .foot-nav a{padding:11px 6px}
   .contact-list a{margin-top:0;padding:14px 0 3px}
 }
 

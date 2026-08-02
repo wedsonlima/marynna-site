@@ -155,5 +155,12 @@ de comprovação mediante solicitação fica no rodapé, em todas as páginas.
 - Link "Ir para o conteúdo" antes do cabeçalho
 - Foco de teclado visível em todos os elementos interativos (`:focus-visible`)
 - Navegação disponível no celular — o cabeçalho quebra em duas linhas em vez de esconder os links
-- Sem rolagem horizontal de 345 px para cima
+- Sem rolagem horizontal de 320 px para cima, medido em 320, 360, 375, 390, 412 e 430
+- Alvos de toque de 44 px nos links de navegação: menu do rodapé, trilha e cabeçalho.
+  Ficam de fora os links dentro de frase (`.note a`), que a WCAG 2.5.8 dispensa
+- No telefone (≤560 px) o atalho de WhatsApp é disco, só o símbolo. Com o rótulo ele
+  media 141 px e cobria um botão do herói em tela estreita ou baixa — e, por flutuar
+  por cima, ficava com o toque. Elemento fixo cobre o pé da tela em qualquer rolagem,
+  então reservar espaço no fim do documento não resolve; o que resolve é encolher
+- Em paisagem baixa (≤520 px de altura) o cabeçalho deixa de ser fixo
 - `prefers-reduced-motion: reduce` respeitado
