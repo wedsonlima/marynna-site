@@ -37,11 +37,10 @@ LINKEDIN = "https://www.linkedin.com/in/marynna-pereira"
 LATTES = "https://lattes.cnpq.br/7021509895045643"
 OAB = "OAB/CE nº 39.602"
 
-# Endereço profissional — único lugar do site que cita a cidade.
-END_RUA = "Rua Monsenhor Bruno, 2220"
+# Praça de atuação. O endereço de rua não é publicado: só cidade e UF, e apenas
+# nos dados estruturados, para sinalizar a região atendida.
 END_CIDADE = "Fortaleza"
 END_UF = "CE"
-END_CEP = "60115-046"
 
 # Preencha com o domínio final para emitir canonical e og:url.
 # Vazio = as tags são omitidas (melhor do que apontar para um endereço errado).
@@ -111,7 +110,6 @@ def footer():
       <div class="foot-id">
         <p class="idn">Marynna Pereira</p>
         <p>Advogada · {OAB}</p>
-        <address>{END_RUA} — {END_CIDADE}/{END_UF}, {END_CEP}</address>
       </div>
       <nav class="foot-nav" aria-label="Rodapé">
         <a href="index.html">Início</a>
@@ -205,10 +203,8 @@ def jsonld(page):
         "knowsLanguage": ["pt-BR", "en", "es", "fr", "zh"],
         "address": {
             "@type": "PostalAddress",
-            "streetAddress": END_RUA,
             "addressLocality": END_CIDADE,
             "addressRegion": END_UF,
-            "postalCode": END_CEP,
             "addressCountry": "BR",
         },
         "telephone": TEL,
