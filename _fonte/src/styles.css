@@ -31,8 +31,11 @@
   --gutter:clamp(20px,4vw,32px);
 
   /* --- tipografia ----------------------------------------- */
-  --ff-display:"Fraunces","Georgia","Times New Roman",serif;
-  --ff-body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  /* "… Fallback" é a fonte do sistema vestida com as métricas da fonte real
+     (ver FALLBACKS em build.py): segura o texto no tamanho certo enquanto a
+     real não chega. Se ela não existir no aparelho, a pilha segue normal. */
+  --ff-display:"Fraunces","Fraunces Fallback",Georgia,"Times New Roman",serif;
+  --ff-body:"Inter","Inter Fallback",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --t-label:12px;   /* etiquetas em caixa alta */
   --t-cite:13px;    /* citações e notas de margem */
   --t-aux:15px;     /* texto de apoio dentro de cartões */
@@ -126,6 +129,8 @@ section{padding:clamp(66px,8.5vw,116px) 0}
 .h-md{font-size:clamp(24px,2.8vw,32px);font-weight:400;line-height:1.18;letter-spacing:-.012em}
 
 .lead{font-size:clamp(17px,1.4vw,19.5px);line-height:1.62;color:var(--slate);max-width:60ch}
+.lead a{color:var(--brass);text-decoration:underline;text-underline-offset:3px}
+.on-ink .lead a,.hero .lead a{color:var(--brass-soft)}
 .lead-wide{max-width:none}
 .lead + .lead{margin-top:18px}
 h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
@@ -137,6 +142,21 @@ h1 + .lead,h2 + .lead{margin-top:clamp(16px,1.7vw,22px)}
 
 .rule{width:52px;height:1px;background:var(--brass-2);margin:0 0 24px}
 .on-ink .rule,.hero .rule{background:var(--brass-soft)}
+
+/* ---------- trilha de navegação ----------
+   Ocupa a linha da sobrancelha em vez de uma linha nova: o rastro é a
+   própria etiqueta da página, com a origem à frente. O alvo de toque do
+   link cresce por padding e volta por margem — a altura da linha não muda. */
+.crumbs ol{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:0 10px}
+.crumbs li{display:flex;align-items:center;gap:0 10px}
+.crumbs li + li::before{content:"/";color:var(--brass-soft);font-weight:400}
+.crumbs a{
+  display:inline-block;padding:7px 0;margin:-7px 0;
+  text-decoration:none;color:var(--on-dark-2);
+  border-bottom:1px solid transparent;transition:color .2s,border-color .2s;
+}
+.crumbs a:hover{color:var(--paper);border-bottom-color:var(--brass-soft)}
+@media (prefers-reduced-motion:reduce){.crumbs a{transition:none}}
 
 /* nota de rodapé de seção — texto legal recuado */
 .note{
