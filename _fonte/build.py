@@ -28,9 +28,6 @@ FONT_FILES = [
     ("Inter", ROOT / "inter-latin-wght-normal.woff2"),
 ]
 
-# Nenhuma fonte viaja dentro do documento: as duas são arquivo.
-INLINE_FONTS = set()
-
 # ---------------------------------------------------------------------------
 # Fontes de recurso com métrica corrigida
 #
@@ -92,44 +89,38 @@ def emit_fonts():
 
     O hash no nome permite cache longo: se a fonte mudar, o nome muda.
     """
-    import base64
-
     out_dir = DIST / "fonts"
     out_dir.mkdir(parents=True, exist_ok=True)
     faces, preloads, publicados = [], [], set()
 
     for family, path in FONT_FILES:
         data = path.read_bytes()
-        if family in INLINE_FONTS:
-            src = ("url(data:font/woff2;base64,%s) format('woff2')"
-                   % base64.b64encode(data).decode("ascii"))
-        else:
-            nome = "%s.%s.woff2" % (path.stem.replace("-wght-normal", ""),
-                                    hashlib.sha256(data).hexdigest()[:8])
-            alvo = out_dir / nome
-            if not alvo.exists() or alvo.read_bytes() != data:
-                alvo.write_bytes(data)
-            publicados.add(nome)
-            url = "/fonts/" + nome
-            src = f"url({url}) format('woff2')"
-            # crossorigin não é opcional: fonte é sempre buscada em modo CORS
-            # anônimo, e sem o atributo o navegador baixa o arquivo duas vezes.
-            preloads.append(f'<link rel="preload" href="{url}" as="font" '
-                            f'type="font/woff2" crossorigin>')
+        nome = "%s.%s.woff2" % (path.stem.replace("-wght-normal", ""),
+                                hashlib.sha256(data).hexdigest()[:8])
+        alvo = out_dir / nome
+        if not alvo.exists() or alvo.read_bytes() != data:
+            alvo.write_bytes(data)
+        publicados.add(nome)
+        url = "/fonts/" + nome
+        # crossorigin não é opcional: fonte é sempre buscada em modo CORS
+        # anônimo, e sem o atributo o navegador baixa o arquivo duas vezes.
+        preloads.append(f'<link rel="preload" href="{url}" as="font" '
+                        f'type="font/woff2" crossorigin>')
         faces.append(
             f"@font-face{{font-family:'{family}';font-style:normal;font-display:swap;"
-            f"font-weight:100 900;src:{src};"
+            f"font-weight:100 900;src:url({url}) format('woff2');"
             f"unicode-range:{UNICODE_RANGE};}}")
-        if family in FALLBACKS and family not in INLINE_FONTS:
+        if family in FALLBACKS:
             faces.append(face_de_recurso(FALLBACKS[family]))
 
-    for antigo in out_dir.glob("*.woff2"):
+    # A fonte antiga só sai depois que o HTML que a citava saiu de cache: um
+    # visitante que pegou a página antes do deploy ainda pede o nome antigo.
+    for antigo in sorted(out_dir.glob("*.woff2")):
         if antigo.name not in publicados:
-            antigo.unlink()
-    if not publicados and out_dir.exists() and not any(out_dir.iterdir()):
-        out_dir.rmdir()
+            print(f"  · {antigo.name} não é mais referenciado — apague à mão "
+                  f"depois que o HTML antigo tiver saído de cache")
 
-    return "".join(faces), ("\n".join(preloads) + "\n" if preloads else "")
+    return "".join(faces), "\n".join(preloads) + "\n"
 
 
 FONT_FACES, FONT_PRELOAD = emit_fonts()
@@ -387,16 +378,35 @@ _DETAILS = re.compile(
     r"<details>\s*<summary>(.*?)</summary>\s*"
     r'<div class="ans">(.*?)</div>\s*</details>',
     re.S)
-_TAGS = re.compile(r"<[^>]+>")
+# Só é tag o que abre uma: com `<[^>]+>`, um "menos de < 5%" no meio da
+# resposta engolia tudo até o `>` seguinte.
+_TAGS = re.compile(r"<!--.*?-->|</?[a-zA-Z][^>]*>", re.S)
 _ESPACO = re.compile(r"\s+")
+_ABRE_DETAILS = re.compile(r"<details\b")
 
 
 def texto(fragmento):
     return _ESPACO.sub(" ", html_mod.unescape(_TAGS.sub("", fragmento))).strip()
 
 
-def faq(frag):
-    return [(texto(q), texto(a)) for q, a in _DETAILS.findall(frag)]
+def faq(frag, pagina):
+    """Perguntas visíveis da página, na ordem em que aparecem.
+
+    _DETAILS casa uma forma exata. `<details open>` ou outra classe no
+    invólucro da resposta continuam válidos no navegador e continuariam
+    aparecendo para o leitor — mas sairiam daqui em silêncio, e o FAQPage
+    publicado passaria a descrever menos do que a página mostra. Por isso a
+    contagem é conferida: divergiu, a build para.
+    """
+    pares = _DETAILS.findall(frag)
+    visiveis = len(_ABRE_DETAILS.findall(frag))
+    if len(pares) != visiveis:
+        raise SystemExit(
+            f"{pagina}: a página mostra {visiveis} pergunta(s) e o extrator "
+            f"achou {len(pares)}. O FAQPage sairia incompleto. Confira se o "
+            f"markup ainda é <details><summary>…</summary>"
+            f'<div class="ans">…</div></details>.')
+    return [(texto(q), texto(a)) for q, a in pares]
 
 
 def jsonld(page, frag):
@@ -527,7 +537,7 @@ def jsonld(page, frag):
             "itemListElement": itens,
         })
 
-    perguntas = faq(frag)
+    perguntas = faq(frag, page)
     if perguntas:
         # O FAQPage descreve a mesma URL da WebPage; por isso ele entra como
         # segundo tipo do nó da página, e não como um nó paralelo.
@@ -543,8 +553,22 @@ def jsonld(page, frag):
 
     data = {"@context": "https://schema.org", "@graph": grafo}
     return ('<script type="application/ld+json">\n'
-            + json.dumps(data, ensure_ascii=False, indent=2)
+            # `<` é escape JSON válido: o buscador lê a mesma string, e o
+            # analisador de HTML nunca vê um `</script>` que feche o bloco
+            # antes da hora. O texto vem das perguntas da página, onde um
+            # `&lt;/script&gt;` escrito à mão viraria `</script>` literal.
+            + json.dumps(data, ensure_ascii=False, indent=2).replace("<", "\\u003c")
             + "\n</script>\n")
+
+
+def atrib(s):
+    """Texto indo para dentro de aspas de atributo HTML.
+
+    Título e descrição são prosa: basta uma aspa dupla numa delas para fechar
+    o atributo antes da hora e derrubar o resto da tag. Nos dados estruturados
+    quem escapa é o json.dumps — lá isto não passa, ou sairia `&quot;` literal.
+    """
+    return html_mod.escape(s, quote=True)
 
 
 def social(page):
@@ -557,12 +581,12 @@ def social(page):
             f'<meta property="og:image:type" content="image/png">\n'
             f'<meta property="og:image:width" content="1200">\n'
             f'<meta property="og:image:height" content="630">\n'
-            f'<meta property="og:image:alt" content="{cfg["og_alt"]}">\n'
+            f'<meta property="og:image:alt" content="{atrib(cfg["og_alt"])}">\n'
             f'<meta name="twitter:card" content="summary_large_image">\n'
-            f'<meta name="twitter:title" content="{cfg["title"]}">\n'
-            f'<meta name="twitter:description" content="{cfg["desc"]}">\n'
+            f'<meta name="twitter:title" content="{atrib(cfg["title"])}">\n'
+            f'<meta name="twitter:description" content="{atrib(cfg["desc"])}">\n'
             f'<meta name="twitter:image" content="{img}">\n'
-            f'<meta name="twitter:image:alt" content="{cfg["og_alt"]}">\n')
+            f'<meta name="twitter:image:alt" content="{atrib(cfg["og_alt"])}">\n')
 
 
 def canonical(page):
@@ -584,10 +608,17 @@ LASTMOD_FILE = ROOT / "lastmod.json"
 
 
 def impressao(page):
+    """Tudo que é conteúdo da página, e nada que seja apresentação.
+
+    O corpo não é a única coisa que o leitor vê: a trilha, o menu e o número
+    da OAB no rodapé também saem daqui, e mexer neles muda a página. Ficam de
+    fora o CSS e o ano do rodapé — o primeiro é forma, o segundo vira sozinho.
+    """
     cfg = PAGES[page]
     frag = (SRC / f"{cfg['body']}.body.html").read_bytes()
-    miolo = frag + ("\x00".join([cfg["title"], cfg["desc"], cfg["og_alt"]])
-                    .encode("utf-8"))
+    compartilhado = [cfg["title"], cfg["desc"], cfg["og_alt"], OAB,
+                     repr(CRUMBS.get(page)), repr(NAV_ITEMS), repr(ATUA_EM)]
+    miolo = frag + "\x00".join(compartilhado).encode("utf-8")
     return hashlib.sha256(miolo).hexdigest()[:16]
 
 
@@ -655,7 +686,7 @@ def build():
     for out, cfg in PAGES.items():
         frag = corpo(cfg["body"]).replace("{{CRUMBS}}", crumbs(out))
         html = SHELL.format(
-            title=cfg["title"], desc=cfg["desc"], css=CSS, robots=ROBOTS,
+            title=atrib(cfg["title"]), desc=atrib(cfg["desc"]), css=CSS, robots=ROBOTS,
             preload=FONT_PRELOAD, canonical=canonical(out), social=social(out),
             jsonld=jsonld(out, frag), favicon=FAVICON,
             header=header(out, cfg["dark_head"]), body=frag, footer=footer(),
