@@ -42,9 +42,9 @@ OAB = "OAB/CE nº 39.602"
 END_CIDADE = "Fortaleza"
 END_UF = "CE"
 
-# Preencha com o domínio final para emitir canonical e og:url.
-# Vazio = as tags são omitidas (melhor do que apontar para um endereço errado).
-SITE_URL = ""
+# Domínio final. Vazio = canonical, og:url, og:image e o sitemap são omitidos,
+# porque URL relativa não serve para nenhum deles.
+SITE_URL = "https://marynnapereira.adv.br"
 
 ANO = datetime.date.today().year
 
@@ -54,6 +54,9 @@ PAGES = {
         title="Marynna Pereira | Advogada — Patrimônio, Societário e Governança",
         desc=("Advocacia e consultoria jurídica em estruturação societária, planejamento "
               "patrimonial, sucessório e tributário, governança, compliance e proteção de dados."),
+        og="home.png",
+        og_alt=("Cartão do site de Marynna Pereira, advogada: Patrimônio, estrutura "
+                "societária e sucessão."),
         dark_head=True,
     ),
     "empresas.html": dict(
@@ -61,6 +64,9 @@ PAGES = {
         title="Consultoria jurídica para empresas | Marynna Pereira",
         desc=("Estruturação societária, holding, planejamento tributário, governança "
               "corporativa, compliance e LGPD para empresas. Atendimento presencial e a distância."),
+        og="empresas.png",
+        og_alt=("Cartão da página para empresas: a estrutura da empresa é uma decisão "
+                "jurídica — e financeira."),
         dark_head=True,
     ),
     "patrimonio-e-sucessao.html": dict(
@@ -68,6 +74,9 @@ PAGES = {
         title="Planejamento patrimonial e sucessório | Marynna Pereira",
         desc=("Planejamento sucessório, holding familiar, proteção patrimonial, testamento e "
               "doações para pessoas físicas e famílias. Atendimento presencial e a distância."),
+        og="patrimonio-e-sucessao.png",
+        og_alt=("Cartão da página de patrimônio e sucessão: o que se constrói numa vida "
+                "se transmite segundo regras."),
         dark_head=True,
     ),
 }
@@ -153,7 +162,7 @@ SHELL = """<!DOCTYPE html>
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:site_name" content="Marynna Pereira — Advocacia e Consultoria Jurídica">
-<link rel="icon" href="data:image/svg+xml,{favicon}">
+{social}<link rel="icon" href="data:image/svg+xml,{favicon}">
 <style>
 {css}
 </style>
@@ -222,6 +231,24 @@ def jsonld(page):
     return json.dumps(data, ensure_ascii=False, indent=2)
 
 
+def social(page):
+    """Cartão para redes sociais. Exige URL absoluta — sem SITE_URL, não sai."""
+    if not SITE_URL:
+        return ""
+    cfg = PAGES[page]
+    img = SITE_URL.rstrip("/") + "/og/" + cfg["og"]
+    return (f'<meta property="og:image" content="{img}">\n'
+            f'<meta property="og:image:type" content="image/png">\n'
+            f'<meta property="og:image:width" content="1200">\n'
+            f'<meta property="og:image:height" content="630">\n'
+            f'<meta property="og:image:alt" content="{cfg["og_alt"]}">\n'
+            f'<meta name="twitter:card" content="summary_large_image">\n'
+            f'<meta name="twitter:title" content="{cfg["title"]}">\n'
+            f'<meta name="twitter:description" content="{cfg["desc"]}">\n'
+            f'<meta name="twitter:image" content="{img}">\n'
+            f'<meta name="twitter:image:alt" content="{cfg["og_alt"]}">\n')
+
+
 def canonical(page):
     url = page_url(page)
     if not url:
@@ -272,7 +299,8 @@ def build():
                     .replace("{{LATTES}}", LATTES))
         html = SHELL.format(
             title=cfg["title"], desc=cfg["desc"], css=CSS,
-            canonical=canonical(out), jsonld=jsonld(out), favicon=FAVICON,
+            canonical=canonical(out), social=social(out),
+            jsonld=jsonld(out), favicon=FAVICON,
             header=header(out, cfg["dark_head"]), body=frag, footer=footer(),
         )
         html = rewrite_links(html, out)
@@ -282,6 +310,37 @@ def build():
         print(f"  ✓ {OUT_PATH[out]}  ({len(html)//1024} KB)")
 
 
+def sitemap():
+    """Sitemap e robots saem daqui para não repetirem o domínio à mão."""
+    if not SITE_URL:
+        print("  · SITE_URL vazio — sitemap.xml e robots.txt não foram tocados")
+        return
+    hoje = datetime.date.today().isoformat()
+    urls = "\n".join(
+        f"  <url>\n"
+        f"    <loc>{page_url(p)}</loc>\n"
+        f"    <lastmod>{hoje}</lastmod>\n"
+        f"    <changefreq>monthly</changefreq>\n"
+        f"    <priority>{'1.0' if p == 'index.html' else '0.8'}</priority>\n"
+        f"  </url>"
+        for p in PAGES
+    )
+    (DIST / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{urls}\n"
+        "</urlset>\n", encoding="utf-8")
+    print("  ✓ sitemap.xml")
+
+    (DIST / "robots.txt").write_text(
+        "User-agent: *\n"
+        "Allow: /\n"
+        "\n"
+        f"Sitemap: {SITE_URL.rstrip('/')}/sitemap.xml\n", encoding="utf-8")
+    print("  ✓ robots.txt")
+
+
 if __name__ == "__main__":
     print("Gerando páginas:")
     build()
+    sitemap()
