@@ -312,8 +312,7 @@ SHELL = """<!DOCTYPE html>
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:site_name" content="Marynna Pereira — Advocacia e Consultoria Jurídica">
-{social}<link rel="icon" href="data:image/svg+xml,{favicon}">
-<style>
+{social}{icones}<style>
 {css}
 </style>
 {jsonld}</head>
@@ -333,12 +332,20 @@ SHELL = """<!DOCTYPE html>
 </html>
 """
 
-# Favicon: o monograma MP nas cores do site, sem arquivo externo.
-FAVICON = (
-    "%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E"
-    "%3Crect%20width='32'%20height='32'%20fill='%230F1D18'/%3E"
-    "%3Ctext%20x='16'%20y='22'%20font-family='Georgia,serif'%20font-size='15'"
-    "%20fill='%23D6C599'%20text-anchor='middle'%3EMP%3C/text%3E%3C/svg%3E"
+# Ícones — gerados por icones.py, que também explica o desenho.
+#
+# O .ico vem primeiro e declara o tamanho: navegador que entende SVG usa o SVG,
+# e o sizes serve de desempate para os que não entendem. Ele precisa existir na
+# raiz mesmo com as tags aqui, porque navegador e robô pedem /favicon.ico sem
+# perguntar ao HTML — e, no GitHub Pages, o que responde a um pedido sem
+# resposta é o 404.html, 33 KB de página para quem só queria 4 KB de ícone.
+#
+# Não há manifesto: o Android usa o apple-touch-icon quando não encontra um, e
+# um site institucional de três páginas não se instala como aplicativo.
+ICONES = (
+    '<link rel="icon" href="/favicon.ico" sizes="32x32">\n'
+    '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
+    '<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n'
 )
 
 OUT_PATH = {
@@ -688,7 +695,7 @@ def build():
         html = SHELL.format(
             title=atrib(cfg["title"]), desc=atrib(cfg["desc"]), css=CSS, robots=ROBOTS,
             preload=FONT_PRELOAD, canonical=canonical(out), social=social(out),
-            jsonld=jsonld(out, frag), favicon=FAVICON,
+            jsonld=jsonld(out, frag), icones=ICONES,
             header=header(out, cfg["dark_head"]), body=frag, footer=footer(),
         )
         html = rewrite_links(html, out)
@@ -707,7 +714,7 @@ def erro_404():
         title="Página não encontrada | Marynna Pereira",
         desc="O endereço solicitado não existe neste site.",
         css=CSS, robots="noindex, follow", preload=FONT_PRELOAD,
-        canonical="", social="", jsonld="", favicon=FAVICON,
+        canonical="", social="", jsonld="", icones=ICONES,
         header=header("404.html", True), body=corpo("404"), footer=footer(),
     )
     html = rewrite_links(html, "404.html")
