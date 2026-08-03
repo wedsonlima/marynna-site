@@ -12,6 +12,8 @@ JavaScript essencial — a página funciona inteira com o script desativado.
     404.html                         →  erro do GitHub Pages, fora do índice
     fonts/*.woff2                    →  fontes com hash no nome
     og/*.png                         →  cartões de compartilhamento (1200×630)
+    favicon.svg, favicon.ico         →  ícone de aba
+    apple-touch-icon.png             →  ícone de tela de início do iOS
     sitemap.xml, robots.txt          →  gerados pelo build
 
 ## Como editar
@@ -27,6 +29,7 @@ e rode o build:
 - `_fonte/src/pessoal.body.html` — conteúdo da página de patrimônio e sucessão
 - `_fonte/build.py` — monta cabeçalho, rodapé, meta tags, dados estruturados, sitemap e
   robots, e reescreve os links
+- `_fonte/og.py` e `_fonte/icones.py` — imagens da marca, rodados à parte (ver adiante)
 
 Os fontes usam acentuação normal (UTF-8), não entidades HTML.
 
@@ -78,6 +81,54 @@ distribuição das larguras de glifo, não na largura total.
 Gera um PNG de 1200×630 por página em `og/`, com o herói da própria página, usando Fraunces
 e Inter descomprimidas dos `.woff2` do repositório. Roda separado do build: a imagem só muda
 quando o herói muda. Ao alterar um `h1`, regere o cartão correspondente em `CARDS`.
+
+## Ícones
+
+    python3 _fonte/icones.py
+
+Gera `favicon.svg`, `favicon.ico` (16, 32 e 48) e `apple-touch-icon.png` (180×180). Também
+roda separado do build: a marca só muda quando alguém decide mudá-la.
+
+É a marca do cabeçalho — o `.mono`, que é um quadrado de fio com **MP** em Fraunces — em dois
+estados de tamanho:
+
+| | desenho | por quê |
+|---|---|---|
+| 16–48 px | **M** sozinho, a sangria no quadrado de tinta | duas letras a 16 px sobram sete pixels de largura cada: os serifas somem e o par vira mancha. Medido em `rsvg-convert` antes de decidir |
+| 180 px | **MP** dentro da moldura de fio | onde as duas letras e o fio cabem, a marca volta inteira |
+
+Não são dois desenhos: é o mesmo selo com uma letra a menos. A moldura é o acessório que sai
+primeiro — a 16 px um fio de 1 px vira meio pixel cinza e ainda rouba o espaço da letra.
+
+Decisões que não são óbvias no código:
+
+- **As letras saem em contorno**, extraídas do woff2 do próprio repositório, não como
+  `<text font-family="…">`. O favicon anterior pedia Georgia, que não é a fonte do site e
+  não existe em Android nem na maioria das distribuições Linux — nessas máquinas o navegador
+  caía num serif qualquer, com outra métrica, e a letra saía fora do centro. Contorno
+  renderiza igual em todo lugar.
+- **Peso 600 no ícone pequeno**, embora a Fraunces do site ande de 300 a 500. Peso maior em
+  tamanho menor é compensação óptica, não outra tipografia: é o que o eixo `opsz` faria se
+  este recorte da fonte o expusesse. A 16 px o peso 400 acinzenta e o 700 fecha as
+  contra-formas do M.
+- **O `.ico` precisa existir na raiz** mesmo com as tags `<link>` no HTML: navegador e robô
+  pedem `/favicon.ico` sem consultar a página. No GitHub Pages, quem responde a um pedido sem
+  arquivo é o `404.html` — 33 KB de página para quem só queria 4 KB de ícone.
+- **Cada tamanho do `.ico` é rasterizado no seu tamanho.** O Pillow, ao salvar `.ico`,
+  reamostra uma imagem só para todos os tamanhos; a diferença aparece justamente a 16 px,
+  entre serifa legível e serifa borrada. Daí o contêiner ser montado à mão em `escreve_ico`.
+- **O `favicon.svg` tem os dois estados de cor**, num `@media (prefers-color-scheme:dark)`
+  dentro do próprio arquivo: sobre barra de abas escura, um quadrado quase preto vira buraco.
+  A inversão não é nova — `.mono` já é latão sobre papel no cabeçalho claro e latão claro
+  sobre tinta no `.on-dark`. As cores também ficam em atributo de apresentação, que tem
+  precedência menor que a regra CSS, para que renderizador que ignore o `<style>` caia no
+  estado claro em vez de ficar sem cor.
+- **As coordenadas do contorno são arredondadas para inteiro.** Interpolar a fonte variável
+  num peso intermediário devolve casas decimais até a décima sexta — eram 3,8 KB de SVG para
+  uma letra só, contra 1,2 KB depois. A fonte tem 2000 unidades por em e o desenho ocupa 32:
+  o arredondamento acontece duas ordens de grandeza abaixo do pixel.
+- **Não há manifesto.** O Android usa o `apple-touch-icon` quando não encontra um, e um site
+  institucional de três páginas não se instala como aplicativo.
 
 ## Sistema visual
 
